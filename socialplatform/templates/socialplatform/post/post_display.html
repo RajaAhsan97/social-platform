@@ -1,0 +1,17 @@
+{% extends 'socialplatform/index.html' %}
+
+{% block title %} {{Group}} {% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2> {{Group.name}} </h2>
+
+        <h4> Members Count: {{group_members_count}}</h4> 
+
+        {% for post in Posts %}
+            <li> {{post.message}} </li>
+        {% empty %}
+            No posts yet!
+        {% endfor %}
+    </div>
+{% endblock %}

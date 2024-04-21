@@ -1,0 +1,112 @@
+{% extends 'socialplatform/index.html' %}
+{% load list_indexing %}
+{% block title %} @{{user}} {% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="loggedInUser">
+            <div>
+                <div>
+                    {% if user.is_authenticated %}
+                    <h3> Welcome back ! <br> @{{user}}  </h3>
+                    {% else %}
+                    <h3> {{msg}} </h3>
+                    {% endif %}
+                </div>
+
+                <div class="greeting">
+                    <h3> Groups </h3>
+                    <p> Welcome to Groups page! Select a gorup with shared interest </p>
+                    <a href="{% url 'social:create-group' %}"> Create Group </a>
+                </div>
+
+                <div class="UserGroupCreated"> 
+                    <h3> Your Groups: </h3>
+                    {% for group in user_groups %}
+                    <div>
+                        <h4>
+                            <li> <a href="{% url 'social:post-list' group.id %}"> {{group.name}} </a> </li>
+                        </h4>
+                        <div class="GroupPosts">
+                            <span> {{group.no_of_posts}} </span> post{{group.no_of_posts|pluralize}} 
+                        </div>
+                    </div>
+                    {% empty %}
+                        No groups created
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="listGroups">
+                {% for group in Groups %} 
+                <div>
+                    <h4>
+                        <li> <a href="{% url 'social:post-list' group.id %}"> {{group.name}} </a> </li>
+                    </h4>
+                    <div class="GroupActions">
+                        <div>
+                            <span> {{group.no_of_posts}} </span> post{{group.no_of_posts|pluralize}} 
+                        </div>
+                        <div class="JoinOrLeaveGroup" >
+                            <a href="#" data-groupid="{{group.id}}" data-userid="{{current_user}}" data-action="{% if memberGroupJoined|list_index:forloop.counter0 == 1 %}Leave Group{% else %}join Group{% endif %}" class="join">  
+                                {% if memberGroupJoined|list_index:forloop.counter0 == 1 %}
+                                    Leave Group
+                                {% else %}
+                                    Join Group
+                                {% endif %}
+                            </a> 
+                        </div>
+                        <div style="margin-left: 10px;">
+                            {% comment %} <span class="count"> {{group_members|list_index:forloop.counter0}} </span> {% endcomment %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block domready %}
+    const url = "{% url 'social:group-join' %}";
+    var options = {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrftoken},
+        mode: 'same-origin'
+    }
+    var groups = document.getElementsByClassName('join');
+    console.log(groups); 
+
+    Array.from(groups).forEach(function(groupAction) {
+        groupAction.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log("clicked");
+        var joinButton = this;
+    
+
+        var formData = new FormData();
+        formData.append('group_id', joinButton.dataset.groupid);
+        formData.append('user_id', joinButton.dataset.userid);
+        formData.append('action', joinButton.dataset.action);
+        options['body'] = formData;
+
+        fetch(url, options).then(response => response.json()).then(data => {
+            if (data['status'] === 'ok') {
+                console.log("okay response");
+
+                if (joinButton.dataset.action === 'join Group')
+                {
+                    joinButton.dataset.action = 'Leave Group';
+                    joinButton.innerHTML = 'Leave Group';
+                    console.log("leave Group");
+                }
+                else {
+                    joinButton.dataset.action = 'join Group';
+                    joinButton.innerHTML = 'Join Group';
+                    console.log("Join Group");
+                }
+            }
+        })
+    })
+    });
+{% endblock %}

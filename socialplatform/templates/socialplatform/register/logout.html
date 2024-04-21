@@ -1,0 +1,15 @@
+{% extends 'socialplatform/index.html' %}
+
+{% block title %} Logout {% endblock %}
+
+{% block content %}
+    <h2> Logout successful </h2>
+    <div style="display:flex;">
+        <div>
+        <a href="{% url "social:login" %}" class="btn btn-primary"> Log-in </a>
+        </div>
+        <div style="margin-left:10px;">
+        <a href="{% url "social:signup" %}" class="btn btn-primary"> Sign-up </a>
+        </div>
+    </div>
+{% endblock %}
